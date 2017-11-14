@@ -1646,8 +1646,9 @@ function emoji( country ){
 		+String.fromCodePoint(s + offset);
 }
 
-const DATA_URL = "https://sql.telemetry.mozilla.org/api/queries/49097/results.json?api_key=";
-const TEN_MINUTES = 10 * 60 * 1000;
+const UPDATE_TIME = 5 * 60 * 1000;
+
+const LOCAL_DATA_URL = "http://localhost:8080/paydirt.json";
 
 function getTopFiveCountries(countries) {
   return countries.sort((a, b) => {
@@ -1661,18 +1662,18 @@ function getTopFiveCountries(countries) {
   }).splice(0, 5);
 }
 
-async function getData(apiKey) {
+async function getLocalData() {
   let resp;
   try {
-    resp = await (await fetch(DATA_URL + apiKey)).json();
+    resp = await (await fetch(LOCAL_DATA_URL)).json();
   } catch (e) {
     console.error(e);
     return;
   }
-  const data = resp.query_result.data.rows;
-  const { total: users, count: newtabs } = data[0];
-  const { total: pocket } = data[1];
-  const countries = getTopFiveCountries(data.splice(2).map(item => ({ code: item["?column?1"], count: item.total })));
+  const users = resp[0][2];
+  const newtabs = resp[0][3];
+  const pocket = resp[1][2];
+  const countries = getTopFiveCountries(resp.splice(2).map(item => ({ code: item[1], count: item[2] })));
   return { users, newtabs, pocket, countries };
 }
 
@@ -1719,9 +1720,11 @@ class App extends React.PureComponent {
     this.onSubmit = this.onSubmit.bind(this);
   }
   async updateData() {
-    const data = await getData(this.state.apiKey);
+    // const data = await getData(this.state.apiKey);
+    const data = await getLocalData();
 
     if (data) {
+      console.log("Users updated: " + data.users);
       this.setState(data);
       // let lastUserDiff;
       // const realDiff = this.state._lastRealUserCount && data.users - this.state._lastRealUserCount;
@@ -1743,7 +1746,7 @@ class App extends React.PureComponent {
   }
   setIntervals() {
     if (!this.inverval) {
-      this.interval = setInterval(this.updateData, TEN_MINUTES);
+      this.interval = setInterval(this.updateData, UPDATE_TIME);
       setInterval(() => {
         this.setState({ users: this.state.users + 237 });
       }, 7000);
@@ -1768,18 +1771,12 @@ class App extends React.PureComponent {
     }
   }
   render() {
-    if (!this.state.apiKey) {
-      return React.createElement(
-        "form",
-        { onSubmit: this.onSubmit },
-        React.createElement("input", { type: "text", value: this.state._apiKey, onChange: e => this.setState({ _apiKey: e.target.value }) }),
-        React.createElement(
-          "button",
-          null,
-          "SUBMIT"
-        )
-      );
-    }
+    // if (!this.state.apiKey) {
+    //   return (<form onSubmit={this.onSubmit}>
+    //     <input type="text" value={this.state._apiKey} onChange={e => this.setState({_apiKey: e.target.value})} />
+    //     <button>SUBMIT</button>
+    //   </form>);
+    // }
     return React.createElement(
       "main",
       null,

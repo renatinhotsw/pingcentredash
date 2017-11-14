@@ -116,7 +116,7 @@ class App extends React.PureComponent {
     if (!this.inverval) {
       this.interval = setInterval(this.updateData, UPDATE_TIME);
       setInterval(() => {
-        this.setState({users: this.state.users + 237});
+        this.setState({users: this.state.users + 137});
       }, 7000);
       setInterval(() => {
         this.setState({newtabs: this.state.newtabs + 238});

@@ -1648,7 +1648,7 @@ function emoji( country ){
 
 const UPDATE_TIME = 5 * 60 * 1000;
 
-const LOCAL_DATA_URL = "http://localhost:8080/paydirt.json";
+const LOCAL_DATA_URL = "http://10.242.26.43:8080/paydirt.json";
 
 function getTopFiveCountries(countries) {
   return countries.sort((a, b) => {
@@ -1717,14 +1717,14 @@ class App extends React.PureComponent {
       _lastRealUserCount: null
     };
     this.updateData = this.updateData.bind(this);
-    this.onSubmit = this.onSubmit.bind(this);
+    // this.onSubmit = this.onSubmit.bind(this);
   }
   async updateData() {
     // const data = await getData(this.state.apiKey);
     const data = await getLocalData();
 
     if (data) {
-      console.log("Users updated: " + data.users);
+      console.log("Users updated: " + data.users, new Date());
       this.setState(data);
       // let lastUserDiff;
       // const realDiff = this.state._lastRealUserCount && data.users - this.state._lastRealUserCount;
@@ -1742,6 +1742,8 @@ class App extends React.PureComponent {
       //   _lastRealUserCount: data.users,
       //   lastUserDiff
       // }));
+    } else {
+      console.log("problem updating");
     }
   }
   setIntervals() {
@@ -1758,17 +1760,14 @@ class App extends React.PureComponent {
       }, 8000);
     }
   }
-  async onSubmit(e) {
-    await this.setState({ apiKey: this.state._apiKey });
+  // async onSubmit(e) {
+  //   await this.setState({apiKey: this.state._apiKey});
+  //   this.updateData();
+  //   this.setIntervals();
+  // }
+  async componentDidMount() {
     this.updateData();
     this.setIntervals();
-  }
-  async componentDidMount() {
-    const key = localStorage.getItem("API_KEY");
-    if (key) {
-      await this.setState({ _apiKey: key });
-      this.onSubmit();
-    }
   }
   render() {
     // if (!this.state.apiKey) {
